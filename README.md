@@ -146,3 +146,87 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## Support
 
 If you encounter any issues or have questions, please open an issue on the GitHub repository.
+
+## Using as an API Endpoint (Claude/LLM Integration)
+
+You can expose this MCP as an HTTP API for use with Claude or other LLMs that support tool/function calling.
+
+### 1. Install dependencies
+```
+npm install
+```
+
+### 2. Start the server
+```
+node server.js
+```
+
+This will start an Express server on port 3000 (or the port set in the PORT environment variable).
+
+### 3. Call the API
+Send a POST request to `/mcp` with a JSON body:
+```json
+{
+  "itemName": "Quartz",
+  "quantity": 1
+}
+```
+
+Example using `curl`:
+```
+curl -X POST http://localhost:3000/mcp \
+  -H "Content-Type: application/json" \
+  -d '{"itemName": "Quartz", "quantity": 1}'
+```
+
+The response will be the same as the function output described above.
+
+You can now register this endpoint as a tool with Claude or any LLM platform that supports HTTP tool calls.
+
+## Troubleshooting
+
+### ReferenceError: javascript is not defined
+If you see this error, remove any stray 'javascript' or similar tokens at the top of your `index.js` or other files. The first line should be a valid comment or code.
+
+### SyntaxError: await is only valid in async functions
+This means you have an `await` statement outside of an async function. Make sure any `await` is inside an `async` function, especially in your MCP logic (e.g., in `src/sc-trade-mcp.js`).
+
+### Server terminates unexpectedly or curl cannot connect
+- Make sure you start the server with `node server.js` and keep that terminal open.
+- Open a new terminal window/tab to run your `curl` command or test with Claude.
+- If the server is killed or crashes, check for error messages in the terminal and address them as described above.
+
+### Puppeteer Headless Deprecation Warning
+You may see a warning like:
+```
+Puppeteer old Headless deprecation warning: ...
+```
+This is not fatal. If you want to use the new headless mode, update your Puppeteer launch code to:
+```js
+browser = await puppeteer.launch({
+  headless: "new",
+  args: ['--no-sandbox', '--disable-setuid-sandbox']
+});
+```
+
+## Step-by-Step Checklist
+
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+2. **Start the server:**
+   ```bash
+   node server.js
+   ```
+   (Keep this terminal open and running)
+3. **Test the endpoint:**
+   Open a new terminal and run:
+   ```bash
+   curl -X POST http://localhost:3000/mcp \
+     -H "Content-Type: application/json" \
+     -d '{"itemName": "Quartz", "quantity": 1}'
+   ```
+4. **Integrate with Claude:**
+   - Register the endpoint as a tool in Claude as described above.
+   - Make sure your server is accessible from Claude (use ngrok if needed).
