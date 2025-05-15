@@ -1,0 +1,23 @@
+{
+  "name": "sc-trade-tools-mcp",
+  "version": "1.0.0",
+  "description": "MCP for finding the best places to sell items in Star Citizen",
+  "main": "index.js",
+  "scripts": {
+    "test": "node examples/test.js"
+  },
+  "keywords": [
+    "star-citizen",
+    "trade",
+    "mcp",
+    "sc-trade-tools"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^21.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}
