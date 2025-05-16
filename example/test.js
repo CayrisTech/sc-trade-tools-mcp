@@ -1,4 +1,4 @@
-const scTradeMCP = require('../src/sc-trade-mcp');
+import { scTradeMCP } from '../src/sc-trade-mcp.js';
 
 async function runTests() {
   console.log('=== Testing SC Trade Tools MCP ===');

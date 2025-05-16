@@ -1,6 +1,87 @@
 # Star Citizen Trade Finder MCP
 
-An MCP (Model Call Panel) for finding the best places to sell items in Star Citizen, powered by [SC Trade Tools](https://sc-trade.tools/).
+A Model Context Protocol (MCP) server for finding the best places to sell items in Star Citizen, powered by [SC Trade Tools](https://sc-trade.tools/).
+
+## For Star Citizen Pilots
+
+**Are you a Star Citizen pilot looking to maximize your trading profits?**
+
+This tool helps you quickly find the best places in the 'verse to sell your cargo. Just tell it what commodity you have (like Quartz, Titanium, or Laranite), and it will instantly tell you the top locations and prices—so you can make the most UEC on every run.
+
+**How to use it:**
+- You can connect this tool to [Claude Desktop](https://www.anthropic.com/claude) (AI assistant for Windows), [Cursor](https://www.cursor.so/) (an AI-powered code editor), or any app that supports MCP tools.
+- Once set up, just ask: _"Where should I sell Quartz?"_ or _"Best place to sell Titanium?"_—and you'll get the top 3 locations, prices, and profit info.
+- If you don't specify a quantity, it assumes 1 SCU (Standard Cargo Unit).
+
+**Quickstart for pilots (Windows, Claude Desktop):**
+
+1. **Install Node.js (if you don't have it):**
+   - Go to [nodejs.org](https://nodejs.org/) and download the LTS version for Windows.
+   - Install it by following the instructions on the website.
+
+2. **Download this project:**
+   - Click the green "Code" button on the GitHub page and choose "Download ZIP".
+   - Unzip the folder to a place you can find it (like your Desktop).
+
+3. **Open a terminal:**
+   - Press `Win + R`, type `cmd`, and press Enter.
+
+4. **Navigate to the project folder:**
+   - In the terminal, type `cd ` (with a space), then drag the unzipped project folder into the terminal window and press Enter.
+
+5. **Install the required packages:**
+   - In the terminal, type:
+     ```
+     npm install
+     ```
+   - Wait for it to finish (this only needs to be done once).
+
+6. **Find the full path to your `server.js` file:**
+   - In your terminal, type:
+     ```
+     echo %cd%\server.js
+     ```
+   - Copy the full path that is printed (e.g., `C:\Users\yourname\Desktop\sc-trade-tools-mcp\server.js`).
+
+7. **Edit your Claude Desktop configuration:**
+   - Open Claude Desktop.
+   - Go to the Claude menu (top left), select **Settings...**
+   - Click on **Developer** in the left sidebar, then click **Edit Config**.
+   - This will open `%APPDATA%\Claude\claude_desktop_config.json` in your text editor.
+
+8. **Add your MCP server to the config file:**
+   - Replace or add to the `"mcpServers"` section like this:
+     ```json
+     {
+       "mcpServers": {
+         "star-citizen-trade": {
+           "command": "node",
+           "args": [
+             "C:\\Users\\yourname\\Desktop\\sc-trade-tools-mcp\\server.js"
+           ]
+         }
+       }
+     }
+     ```
+   - Make sure the path matches the one you copied in step 6.
+
+9. **Save the config file and restart Claude Desktop.**
+
+10. **Start your MCP server:**
+    - In your terminal, type:
+      ```
+      node server.js
+      ```
+    - Leave this terminal window open while you use Claude.
+
+11. **Ask your question in Claude:**
+    - Try: _"Where should I sell Quartz?"_ or _"Best place to sell Titanium?"_
+    - Claude will reply with the top locations and prices for your cargo!
+
+**Reference:**
+- [Model Context Protocol Quickstart for Claude Desktop Users (Windows)](https://modelcontextprotocol.io/quickstart/user#windows)
+
+**That's it! You're ready to make smarter trades in Star Citizen.**
 
 ## Features
 
@@ -9,39 +90,53 @@ An MCP (Model Call Panel) for finding the best places to sell items in Star Citi
 - See available container sizes
 - Calculate total profit for your cargo
 
+## Requirements
+
+- Node.js 16+ (ESM required)
+- Puppeteer (installed automatically)
+
 ## Installation
 
 ```bash
-npm install sc-trade-tools-mcp
+npm install
+git clone <this-repo-url>
+cd sc-trade-tools-mcp
 ```
 
-## Usage
+## Usage (as an MCP Server)
 
-```javascript
-const scTradeMCP = require('sc-trade-tools-mcp');
+1. **Start the MCP server:**
+   ```bash
+   node server.js
+   ```
+   This will start the MCP server using [fastMCP](https://www.npmjs.com/package/fastmcp) and expose the `findBestSellLocations` tool.
 
-// Example: Find where to sell Quartz
-async function findBestSellLocations() {
-  const result = await scTradeMCP({ 
-    itemName: 'Quartz', 
-    quantity: 1 
-  });
-  
-  console.log(result.message);
-  // Output: Here are the top 3 places to sell 1 SCU of Quartz:
-  // 1. Seraphim Station (Stanton > Crusader) - 398 UEC
-  // 2. Magnus Gateway (Stanton) - 398 UEC
-  // 3. Stanton Gateway (Pyro) - 398 UEC
-}
+2. **Connect from Cursor, Claude, or any MCP-compatible client:**
+   - In Cursor: Go to MCP settings, add a new server, and set the command to:
+     ```
+     node /absolute/path/to/server.js
+     ```
+   - The tool will be available as `findBestSellLocations`.
 
-findBestSellLocations();
-```
+3. **Test directly in Node.js:**
+   ```js
+   import { scTradeMCP } from './src/sc-trade-mcp.js';
+   const result = await scTradeMCP({ itemName: 'Quartz', quantity: 1 });
+   console.log(result);
+   ```
+
+4. **Run included tests:**
+   ```bash
+   npm test
+   # or
+   node example/test.js
+   ```
 
 ## Response Format
 
 The MCP returns an object with the following structure:
 
-```javascript
+```json
 {
   "item": "Quartz",
   "quantity": 1,
@@ -52,7 +147,7 @@ The MCP returns an object with the following structure:
       "location": "Crusader",
       "price": 398,
       "containerSizes": [1, 2, 4, 8, 16, 32]
-    },
+    }
     // ... more locations
   ],
   "totalProfit": 398,
@@ -61,37 +156,11 @@ The MCP returns an object with the following structure:
 }
 ```
 
-## Requirements
-
-- Node.js 14+
-- Puppeteer (installed automatically)
-
-## Integration with MCPs
-
-To integrate with an MCP framework, import the function and call it with the user's input.
-
-```javascript
-// Example MCP integration
-async function myMCPHandler(userInput) {
-  // Parse the commodity name from the user input
-  const itemName = extractItemName(userInput);
-  
-  // Call the SC Trade Tools MCP
-  const result = await scTradeMCP({ 
-    itemName: itemName, 
-    quantity: 1 
-  });
-  
-  // Return the result
-  return result;
-}
-```
-
 ## Error Handling
 
 The MCP provides detailed error information for various scenarios:
 
-```javascript
+```json
 // Example error response for an invalid item
 {
   "error": "item_not_found",
@@ -130,6 +199,15 @@ Some common Star Citizen commodities you can query:
 - Beryl
 - Copper
 
+## MCP Inspector / Cursor Integration
+
+- You can use [MCP Inspector](https://github.com/composiohq/mcp-inspector) or Cursor's built-in MCP support to test and interact with this server.
+- Add the server as a command-based MCP server:
+  ```
+  node /absolute/path/to/server.js
+  ```
+- The tool will be available as `findBestSellLocations`.
+
 ## Credits
 
 - This MCP uses data from [SC Trade Tools](https://sc-trade.tools/)
@@ -146,87 +224,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## Support
 
 If you encounter any issues or have questions, please open an issue on the GitHub repository.
-
-## Using as an API Endpoint (Claude/LLM Integration)
-
-You can expose this MCP as an HTTP API for use with Claude or other LLMs that support tool/function calling.
-
-### 1. Install dependencies
-```
-npm install
-```
-
-### 2. Start the server
-```
-node server.js
-```
-
-This will start an Express server on port 3000 (or the port set in the PORT environment variable).
-
-### 3. Call the API
-Send a POST request to `/mcp` with a JSON body:
-```json
-{
-  "itemName": "Quartz",
-  "quantity": 1
-}
-```
-
-Example using `curl`:
-```
-curl -X POST http://localhost:3000/mcp \
-  -H "Content-Type: application/json" \
-  -d '{"itemName": "Quartz", "quantity": 1}'
-```
-
-The response will be the same as the function output described above.
-
-You can now register this endpoint as a tool with Claude or any LLM platform that supports HTTP tool calls.
-
-## Troubleshooting
-
-### ReferenceError: javascript is not defined
-If you see this error, remove any stray 'javascript' or similar tokens at the top of your `index.js` or other files. The first line should be a valid comment or code.
-
-### SyntaxError: await is only valid in async functions
-This means you have an `await` statement outside of an async function. Make sure any `await` is inside an `async` function, especially in your MCP logic (e.g., in `src/sc-trade-mcp.js`).
-
-### Server terminates unexpectedly or curl cannot connect
-- Make sure you start the server with `node server.js` and keep that terminal open.
-- Open a new terminal window/tab to run your `curl` command or test with Claude.
-- If the server is killed or crashes, check for error messages in the terminal and address them as described above.
-
-### Puppeteer Headless Deprecation Warning
-You may see a warning like:
-```
-Puppeteer old Headless deprecation warning: ...
-```
-This is not fatal. If you want to use the new headless mode, update your Puppeteer launch code to:
-```js
-browser = await puppeteer.launch({
-  headless: "new",
-  args: ['--no-sandbox', '--disable-setuid-sandbox']
-});
-```
-
-## Step-by-Step Checklist
-
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
-2. **Start the server:**
-   ```bash
-   node server.js
-   ```
-   (Keep this terminal open and running)
-3. **Test the endpoint:**
-   Open a new terminal and run:
-   ```bash
-   curl -X POST http://localhost:3000/mcp \
-     -H "Content-Type: application/json" \
-     -d '{"itemName": "Quartz", "quantity": 1}'
-   ```
-4. **Integrate with Claude:**
-   - Register the endpoint as a tool in Claude as described above.
-   - Make sure your server is accessible from Claude (use ngrok if needed).

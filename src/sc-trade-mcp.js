@@ -5,7 +5,9 @@
  * @param {number} [input.quantity=1] - The quantity in SCU
  * @returns {Object} - The MCP response
  */
-const puppeteer = require('puppeteer');
+import puppeteer from 'puppeteer';
+import { FastMCP } from 'fastmcp';
+import { z } from 'zod';
 
 async function scTradeMCP(input) {
     // Validate input
@@ -42,7 +44,7 @@ async function scTradeMCP(input) {
       
       // Launch a headless browser
       browser = await puppeteer.launch({
-        headless: true,
+        headless: "new",
         args: ['--no-sandbox', '--disable-setuid-sandbox']
       });
       
@@ -206,4 +208,35 @@ async function scTradeMCP(input) {
     }
 }
 
-module.exports = scTradeMCP;
+// Set up FastMCP server
+defineFastMCPServer();
+
+function defineFastMCPServer() {
+  const server = new FastMCP({
+    name: 'Star Citizen Trade Finder',
+    version: '1.0.0',
+    instructions: 'Finds the best places to sell items in Star Citizen using SC Trade Tools.'
+  });
+
+  server.addTool({
+    name: 'findBestSellLocations',
+    description: 'Find the best places to sell a Star Citizen commodity.',
+    parameters: z.object({
+      itemName: z.string().min(1, 'Item name is required'),
+      quantity: z.number().int().positive().default(1)
+    }),
+    execute: async ({ itemName, quantity }) => {
+      return await scTradeMCP({ itemName, quantity });
+    }
+  });
+
+  // Only start the server if this file is run directly
+  if (import.meta.url === `file://${process.argv[1]}`) {
+    server.start({ transportType: 'stdio' });
+  }
+
+  return server;
+}
+
+// Export for testing or custom server startup
+export { scTradeMCP, defineFastMCPServer };
